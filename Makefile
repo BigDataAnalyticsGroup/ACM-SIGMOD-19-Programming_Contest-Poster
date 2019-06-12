@@ -1,7 +1,7 @@
 .PHONY: all clean cleanall
 
 all: main.tex
-	rubber --pdf main.tex
+	rubber --pdf -W all -v main.tex
 
 clean:
 	rubber --clean main.tex

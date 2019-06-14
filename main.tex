@@ -1,7 +1,9 @@
-\documentclass[a1paper,landscape,american,11pt]{baposter}
+\documentclass[a1paper,portrait,american,fontscale=.4]{baposter}
 
 \usepackage{lipsum}
+\usepackage{listings}
 \usepackage{tikz}
+\usepackage{todo}
 \usetikzlibrary{
     arrows,
     arrows.meta,
@@ -26,10 +28,10 @@
 
 \begin{document}
 \begin{poster}{
-        % Poster Settings
+        %----- Poster Settings -----------------------------------------------------------------------------------------
         background=none,
-        % Box Settings
-        boxColorOne=white!96!black,
+        %----- Box Settings --------------------------------------------------------------------------------------------
+        boxColorOne=white!98!black,
         %boxColorOne=MyColorTwo!30!white,
         %boxColorTwo=MyColorThree!30!white,
         %boxshade=shadeTB,
@@ -37,8 +39,9 @@
         headershade=shadeLR,
         headerColorOne=MyColorOne,
         headerColorTwo=MyColorTwo,
-        textborder=none,
-        headerborder=none,
+        textborder=roundedleft,
+        borderColor=black,
+        headerborder=open,
         headershape=roundedright,
         headerfont=\large\bfseries,
         headerFontColor=white!90!MyColorTwo,
@@ -57,7 +60,16 @@
     }
 
     \headerbox{Task Description}{name=task,column=0,span=2}{
-        \includegraphics[scale=.25]{fig/task_overview.jpg}
+        \begin{itemize}
+            \item 2x Intel Xeon E5-2640v4 @2.4GHz (10 cores, 20 hypterthreads, 25\,MiB cache, AVX-2)
+            \item 30\,GiB RAM
+            \item Ubuntu 17.10 with Linux 4.13
+            \item 2 1.6\,TB SATA-6GBPS SSD (500\,MB/s read, 475\,MB/s write)
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[scale=.33]{fig/task_overview.jpg}
+        \end{center}
 
         \begin{center}
             \begin{tikzpicture}
@@ -74,31 +86,82 @@
                     \node[rect] {$k_9$};
                     \node[rect,minimum width=50mm] (payload) {payload};
                     \draw[decorate,decoration={brace,mirror,amplitude=10pt}]
-                    (k0.south west) -- node[below=3mm] {\footnotesize\textbf{10 byte key}} (payload.south west);
+                    (k0.south west) -- node[below=4mm] {\footnotesize\textbf{10 byte key}} (payload.south west);
                     \draw[decorate,decoration={brace,mirror,amplitude=10pt}]
-                    (payload.south west) -- node[below=3mm] {\footnotesize\textbf{90 byte payload}} (payload.south east);
+                    (payload.south west) -- node[below=4mm] {\footnotesize\textbf{90 byte payload}} (payload.south east);
                 \end{scope}
             \end{tikzpicture}
         \end{center}
 
         \begin{itemize}
-            \item 2x Intel Xeon E5-2640v4 @2.4GHz (10 cores, 20 hypterthreads, 25\,MiB cache, AVX-2)
-            \item 30\,GiB RAM
-            \item Ubuntu 17.10 with Linux 4.13
-            \item 2 1.6\,TB SATA-6GBPS SSD (500\,MB/s read, 475\,MB/s write)
+            \item distinguish between in-memory sorting task and external sorting task
         \end{itemize}
     }
 
-    \headerbox{Sorting Algorithm}{name=algo,column=2,span=2}{
-        \lipsum[2]
+    \headerbox{Sorting Algorithm}{name=algo,column=2,span=1}{
+        \begin{itemize}
+            \item in-place radix sort with \emph{American Flag Sort}
+            \item parallelize on first recursion: use one thread per tail call (work list) or all threads per call
+            \item custom concurrent American Flag Sort partitioning
+            \item \Todo{add a figure?}
+        \end{itemize}
     }
 
-    \headerbox{In-Memory Sorting}{name=inmemory,column=0,span=2,below=task}{
-        \lipsum[3]
+    \headerbox{In-Memory Sorting}{name=inmemory,column=2,span=1,below=algo}{
+        \begin{itemize}
+            \item use concurrent in-place American Flag Sort
+            \item \lstinline{mmap()} the entire output file and read the input file into that memory region
+            \item already partition on first byte while reading from input file
+            \item assume uniform distribution of keys
+            \item decide whether all values $[0 - 255]$ or only printable ASCII $[32-126]$ by inspection of first $10$
+                records
+            \item don't write to disk; terminate the application $\rightarrow$ kernel takes care to write changes to the
+                \lstinline{mmap()}'d file back to disk
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[scale=.05]{fig/parallel_AFS.jpg}
+        \end{center}
     }
 
-    \headerbox{External Memory Sorting}{name=external,column=2,span=2,below=algo}{
-        \includegraphics[scale=.20]{fig/timeline.png}
+    \headerbox{External Memory Sorting}{name=external,column=0,span=2,below=task}{
+        \begin{itemize}
+            \item read as much data as fits into main memory
+            \item sort that data
+            \item in parallel, partition remaining data into 256 buckets on SSD1
+            \item starting with the smallest bucket, load a bucket, sort it, then merge the bucket with the sorted in
+                memory data and write it to the output file on disk
+        \end{itemize}
+
+        \begin{center}
+            \includegraphics[scale=.22]{fig/external_sort_1.jpg}
+            \includegraphics[scale=.22]{fig/external_sort_2.jpg}
+        \end{center}
+
+
+        \includegraphics[scale=.18]{fig/timeline.png}
+        \begin{minipage}[b][6.7cm][c]{.4\textwidth}
+            \begin{enumerate}
+                \item Read the first $M - \epsilon$ records into main memory.
+                \item Start to sort the $M - \epsilon$ records.
+                \item[2'.] Concurrently read the remaining $N - (M - \epsilon)$ records and partition them into $256$ buckets
+                    on SSD1.
+
+                \item Load the next smallest partition into main memory.
+                \item Sort the records in the partition.
+                \item Merge the sorted partition with the sorted in-memory data and write to output file on SSD1.
+            \end{enumerate}
+        \end{minipage}
+    }
+
+    \headerbox{Third-Party Libraries}{name=libs,column=2,span=1,below=inmemory}{
+        \begin{itemize}
+            \item Agner Fog's \lstinline{asmlib}
+            \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library
+            \item \Todo{more libs?}
+        \end{itemize}
     }
 \end{poster}
+\clearpage
+\todos
 \end{document}

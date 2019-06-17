@@ -2,8 +2,10 @@
 
 \usepackage{lipsum}
 \usepackage{listings}
-\usepackage{tikz}
 \usepackage{todo}
+\usepackage{hyperref}
+\usepackage{qrcode}
+\usepackage{tikz}
 \usetikzlibrary{
     arrows,
     arrows.meta,
@@ -30,6 +32,7 @@
 \begin{poster}{
         %----- Poster Settings -----------------------------------------------------------------------------------------
         background=none,
+        columns=5,
         %----- Box Settings --------------------------------------------------------------------------------------------
         boxColorOne=white!98!black,
         %boxColorOne=MyColorTwo!30!white,
@@ -59,7 +62,7 @@
     {
     }
 
-    \headerbox{Task Description}{name=task,column=0,span=2}{
+    \headerbox{Task Description}{name=task,column=0,span=3}{
         \begin{itemize}
             \item 2x Intel Xeon E5-2640v4 @2.4GHz (10 cores, 20 hypterthreads, 25\,MiB cache, AVX-2)
             \item 30\,GiB RAM
@@ -68,9 +71,10 @@
         \end{itemize}
 
         \begin{center}
-            \includegraphics[scale=.33]{fig/task_overview.jpg}
+            \includegraphics[scale=.25]{fig/task_overview.jpg}
         \end{center}
 
+        \textbf{100\,byte record:}
         \begin{center}
             \begin{tikzpicture}
                 \begin{scope}[start chain=going right,node distance=-\pgflinewidth]
@@ -98,16 +102,21 @@
         \end{itemize}
     }
 
-    \headerbox{Sorting Algorithm}{name=algo,column=2,span=1}{
+    \headerbox{Sorting Algorithm}{name=algo,column=3,span=2}{
         \begin{itemize}
             \item in-place radix sort with \emph{American Flag Sort}
-            \item parallelize on first recursion: use one thread per tail call (work list) or all threads per call
+            \item parallelize on first recursion: use one thread per call (work list) or all threads per call
             \item custom concurrent American Flag Sort partitioning
-            \item \Todo{add a figure?}
+            \item fall back to \lstinline{std::sort()} below certain threshold (i.e.\ \emph{introsort} with fall back to
+                \emph{insertion sort})
         \end{itemize}
+
+        \begin{center}
+            \includegraphics[scale=.05]{fig/parallel_AFS.jpg}
+        \end{center}
     }
 
-    \headerbox{In-Memory Sorting}{name=inmemory,column=2,span=1,below=algo}{
+    \headerbox{In-Memory Sorting}{name=inmemory,column=3,span=2,below=algo}{
         \begin{itemize}
             \item use concurrent in-place American Flag Sort
             \item \lstinline{mmap()} the entire output file and read the input file into that memory region
@@ -118,13 +127,9 @@
             \item don't write to disk; terminate the application $\rightarrow$ kernel takes care to write changes to the
                 \lstinline{mmap()}'d file back to disk
         \end{itemize}
-
-        \begin{center}
-            \includegraphics[scale=.05]{fig/parallel_AFS.jpg}
-        \end{center}
     }
 
-    \headerbox{External Memory Sorting}{name=external,column=0,span=2,below=task}{
+    \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
         \begin{itemize}
             \item read as much data as fits into main memory
             \item sort that data
@@ -134,13 +139,14 @@
         \end{itemize}
 
         \begin{center}
-            \includegraphics[scale=.22]{fig/external_sort_1.jpg}
-            \includegraphics[scale=.22]{fig/external_sort_2.jpg}
+            \includegraphics[scale=.2]{fig/external_sort_1.jpg}
+            \includegraphics[scale=.2]{fig/external_sort_2.jpg}
         \end{center}
 
-
-        \includegraphics[scale=.18]{fig/timeline.png}
-        \begin{minipage}[b][6.7cm][c]{.4\textwidth}
+        \begin{minipage}[t][66mm][c]{.53\textwidth}
+            \includegraphics[scale=.18]{fig/timeline.png}
+        \end{minipage}%
+        \begin{minipage}[t][66mm][c]{.47\textwidth}
             \begin{enumerate}
                 \item Read the first $M - \epsilon$ records into main memory.
                 \item Start to sort the $M - \epsilon$ records.
@@ -154,12 +160,25 @@
         \end{minipage}
     }
 
-    \headerbox{Third-Party Libraries}{name=libs,column=2,span=1,below=inmemory}{
+    \headerbox{Third-Party Libraries}{name=libs,column=3,span=2,below=inmemory}{
         \begin{itemize}
-            \item Agner Fog's \lstinline{asmlib}
-            \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library
-            \item \Todo{more libs?}
+            \item Agner Fog's \lstinline{asmlib} {\footnotesize (for \lstinline{memcmp()})}
+            \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library {\footnotesize (not in final submission)}
+            \item Intel Processor Counter Monitor (PCM) {\footnotesize (not in final submission)}
         \end{itemize}
+    }
+
+    \headerbox{Source Code}{name=code,column=3,span=2,below=libs}{
+        \begin{minipage}[b]{.65\linewidth}
+            The source code is available on Github and licensed under Apache~v2.
+        \end{minipage}%
+        \begin{minipage}[t]{.35\linewidth}
+            \begin{flushright}
+                \qrcode[height=22mm]{https://git.io/fjazH}
+                \\[.5em]
+                \mbox{\url{git.io/fjazH}}
+            \end{flushright}
+        \end{minipage}
     }
 \end{poster}
 \clearpage

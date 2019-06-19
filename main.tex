@@ -5,6 +5,11 @@
 \usepackage{todo}
 \usepackage{hyperref}
 \usepackage{qrcode}
+\usepackage{float}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{multicol}
+\usepackage{setspace}
 \usepackage{tikz}
 \usetikzlibrary{
     arrows,
@@ -25,19 +30,59 @@
 \definecolor{MyColorOne}{HTML}{637462}
 \definecolor{MyColorTwo}{HTML}{b7af8a}
 \definecolor{MyColorThree}{HTML}{ccb15a}
+\colorlet{MyBoxBG}{white!96!black}
 
-\tikzstyle{rect}=[draw,rectangle,thick,on chain,font=\tiny,inner sep=1mm,minimum height=1.25em]
+\tikzstyle{rect}=[draw,rectangle,thick,on chain,font=\tiny,inner sep=.5mm,minimum height=1.2em]
+\tikzstyle{ssd}=[draw,rectangle,rounded corners,very thick,minimum width=3cm,minimum height=4cm]
+\tikzstyle{ssd_screw}=[circle,fill=black!50!white,inner sep=0mm,minimum width=2mm]
+\tikzstyle{memory}=[draw,rectangle,very thick,minimum width=18mm,minimum height=40mm]
+\tikzstyle{file}=[draw,rectangle,minimum width=15mm,text width=15mm,minimum height=20mm,align=center]
+
+\newcommand{\SSD}[3][]{%
+    \node[ssd,#1] (#2) {#3};
+    \node[below=1mm] at (#2.north) {\textbf{#2}};
+    \node[ssd_screw,xshift=2mm,yshift=-2mm] at (#2.north west) {};
+    \node[ssd_screw,xshift=-2mm,yshift=-2mm] at (#2.north east) {};
+    \node[ssd_screw,xshift=2mm,yshift=2mm] at (#2.south west) {};
+    \node[ssd_screw,xshift=-2mm,yshift=2mm] at (#2.south east) {};
+}
+
+\newcommand{\Memory}[3][]{%
+    \node[memory,#1] (#2) {#3};
+    \node[below=1mm,text width=15mm,align=center] at (#2.north) {\textbf{#2}};
+}
+
+\newcommand{\File}[2][]{%
+    \node[file,#1] (#2)
+        {%
+            \ttfamily\tiny
+            01000001010000\\
+            11010011010010\\
+            00000101001101\\
+            00100101000111\\
+            01001101010011\\
+            11010001000010\\
+            00000011001000\\
+            11000000110001\\
+            00111001\phantom{000000}\\
+
+        };
+    \node[above] at (#2.north) {\textbf{\footnotesize #2}};
+}
+
+\newcommand{\CPU}[3][]{%
+    \node[draw,rectangle,very thick,minimum width=22mm,minimum height=22mm,#1] (#2) {};
+    \node[draw,rectangle,very thick,rounded corners, minimum width=19mm,minimum height=19mm] at (#2) {#3};
+    \node[below=3mm] at (#2.north) {\textbf{#2}};
+}
 
 \begin{document}
 \begin{poster}{
         %----- Poster Settings -----------------------------------------------------------------------------------------
         background=none,
-        columns=5,
+        columns=6,
         %----- Box Settings --------------------------------------------------------------------------------------------
-        boxColorOne=white!96!black,
-        %boxColorOne=MyColorTwo!30!white,
-        %boxColorTwo=MyColorThree!30!white,
-        %boxshade=shadeTB,
+        boxColorOne=MyBoxBG,
         boxshade=plain,
         headershade=shadeLR,
         headerColorOne=MyColorOne,
@@ -52,57 +97,29 @@
     }
     {}
     {
-        ACM~SIGMOD'19~Programming~Contest
+        \LARGE ACM~SIGMOD'19~Programming~Contest
     }
     {
         \vspace*{.5em}
-        \bfseries
         \emph{teamsic:}~Immanuel~L.~Haffner
+        \qquad
+        Advisor:~Jens~Dittrich
+        \\[.5em]
+        \small
+        Big~Data~Analytics~Group, Saarland~Informatics~Campus
+        \\[.5em]
+        \url{bigdata.uni-saarland.de}
     }
     {
     }
 
     \headerbox{Task Description}{name=task,column=0,span=3}{
-        \begin{itemize}
-            \item 2x Intel Xeon E5-2640v4 @2.4GHz (10 cores, 20 hypterthreads, 25\,MiB cache, AVX-2)
-            \item 30\,GiB RAM
-            \item Ubuntu 17.10 with Linux 4.13
-            \item 2 1.6\,TB SATA-6GBPS SSD (500\,MB/s read, 475\,MB/s write)
-        \end{itemize}
-
         \begin{center}
-            \includegraphics[scale=.25]{fig/task_overview.jpg}
+            \scalebox{.8}{\input{fig/overview.tex}}
         \end{center}
-
-        \textbf{100\,byte record:}
-        \begin{center}
-            \begin{tikzpicture}
-                \begin{scope}[start chain=going right,node distance=-\pgflinewidth]
-                    \node[rect] (k0) {$k_0$};
-                    \node[rect] {$k_1$};
-                    \node[rect] {$k_2$};
-                    \node[rect] {$k_3$};
-                    \node[rect] {$k_4$};
-                    \node[rect] {$k_5$};
-                    \node[rect] {$k_6$};
-                    \node[rect] {$k_7$};
-                    \node[rect] {$k_8$};
-                    \node[rect] {$k_9$};
-                    \node[rect,minimum width=50mm] (payload) {payload};
-                    \draw[decorate,decoration={brace,mirror,amplitude=10pt}]
-                    (k0.south west) -- node[below=4mm] {\footnotesize\textbf{10 byte key}} (payload.south west);
-                    \draw[decorate,decoration={brace,mirror,amplitude=10pt}]
-                    (payload.south west) -- node[below=4mm] {\footnotesize\textbf{90 byte payload}} (payload.south east);
-                \end{scope}
-            \end{tikzpicture}
-        \end{center}
-
-        \begin{itemize}
-            \item distinguish between in-memory sorting task and external sorting task
-        \end{itemize}
     }
 
-    \headerbox{Sorting Algorithm}{name=algo,column=3,span=2}{
+    \headerbox{Sorting Algorithm}{name=algo,column=3,span=3}{
         \begin{itemize}
             \item in-place radix sort with \emph{American Flag Sort}
             \item parallelize on first recursion: use one thread per call (work list) or all threads per call
@@ -190,4 +207,39 @@
 \end{flushright}
 \clearpage
 \todos
+
+\begin{algorithm}
+    \caption{In-Memory Sorting}
+    \begin{algorithmic}
+        \State read first 10~records to predict record type (ASCII [32-126] or binary [0-255])
+        \State estimate bucket size for 256~buckets and uniform distribution
+        \For {record $r$ \textbf{in} input file} \Comment{read from disk}
+            \State bucket\_id $i \gets r.k_0$
+            \State bucket $b \gets$ buckets[$i$]
+            \If {$b$ \textbf{is full}} \Comment{underestimated bucket size}
+                \State append $r$ to overflow bucket $i$
+            \Else
+                \State append $r$ to $b$
+            \EndIf
+        \EndFor
+        \State \textit{patch\_overflow()}
+        \For {every bucket $b$} \Comment{in parallel}
+            \State \emph{american\_flag\_sort}$(b)$
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+    \caption{External Sorting}
+    \begin{algorithmic}
+        \State $n \gets$ number of records that fit into main memory $- \epsilon$
+        \State read first $n$ records into main memory
+        \State sort first $n$ records \Comment{in separate thread}
+        \State partition remaining records into 256~files
+        \For {every partition file $p$, sorted in ascending file size}
+            \State merge $p$ with sorted, in-memory records to output file on disk
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
 \end{document}

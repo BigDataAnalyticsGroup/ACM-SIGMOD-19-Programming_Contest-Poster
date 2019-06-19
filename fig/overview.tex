@@ -1,0 +1,66 @@
+\begin{tikzpicture}
+    % Hardware
+    \SSD{SSD1}{};
+    \Memory[right=10mm of SSD1]{Main Memory}{};
+    \SSD[right=10mm of Main Memory]{SSD2}{};
+    \File[anchor=south,above=6mm of SSD1.south]{Input file};
+    \File[anchor=south,above=6mm of SSD2.south]{Output file};
+    \draw[->,very thick] (Input file) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{read}} (Main Memory);
+    \draw[->,very thick] (Main Memory) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{write}} (Output file);
+    %\draw[->,very thick,out=255,in=285,looseness=2.5] (Main Memory) to node[below=1mm] {\textbf{sort}} (Main Memory);
+    \CPU[above=of Main Memory]{CPU1}{\emph{local}};
+    \draw[<->,very thick] (CPU1) -- node[right=1mm]{\textbf{sort}} (Main Memory.north);
+    \CPU[left=of CPU1]{CPU2}{\emph{remote}};
+    \draw[<->,very thick,dashed,shorten >=1mm,shorten <=1mm] (CPU2) -- ([xshift=-2mm]Main Memory.north);
+
+    % Specification
+    \node[right=3mm of CPU1,align=left]{%
+        \textbullet\,10~cores, 20~hyperthreads
+        \\
+        \textbullet\,25\,MiB cache
+        \\
+        \textbullet\,AVX-2
+    };
+
+    \node[right=3mm of SSD2,align=left]{%
+        \textbullet\,500\,MB/s read
+        \\
+        \textbullet\,475\,MB/s write
+    };
+
+    \node[below=1mm of Main Memory.south,align=left,anchor=north]{%
+        \textbullet\,30\,GiB
+    };
+
+    \begin{scope}[start chain=going right,node distance=-.2\pgflinewidth,local bounding box=record]
+        \node[rect,below left= 15mm and 10mm of Input file] (k0) {$k_0$};
+        \node[rect] {$k_1$};
+        \node[rect] {$k_2$};
+        \node[rect] {$k_3$};
+        \node[rect] {$k_4$};
+        \node[rect] {$k_5$};
+        \node[rect] {$k_6$};
+        \node[rect] {$k_7$};
+        \node[rect] {$k_8$};
+        \node[rect] {$k_9$};
+        \node[rect,minimum width=15mm] (payload) {payload};
+    \end{scope}
+    \draw[decorate,decoration={brace,mirror,amplitude=10pt,raise=1mm}]
+    (k0.south west) -- node[below=5mm] {\footnotesize 10 byte key} ([xshift=-1pt]payload.south west);
+    \draw[decorate,decoration={brace,mirror,amplitude=10pt,raise=1mm}]
+    ([xshift=1pt]payload.south west) -- node[below=5mm] {\footnotesize 90 byte payload} (payload.south east);
+
+    \node[ellipse,draw=blue!60,minimum height=2.6mm,minimum width=16mm] (zoom) at ([yshift=3.7mm] Input file.south) {};
+    \draw[draw=blue!60,shorten >=1mm] (zoom.west) -- (record.north west);
+    \draw[draw=blue!60,shorten >=1mm] (zoom.east) -- (record.north east);
+
+    \node[above=1.5mm of record,align=center,font=\footnotesize] {3~tasks:\\10\,GB, 20\,GB, and 60\,GB};
+
+    \node[align=left, right=15mm of record] {%
+        \textbf{case analysis:}\Todo{wrong place?}
+        \\
+        \quad $< 30$\,GiB $\Rightarrow$ in-memory sorting
+        \\
+        \quad $\ge 30$\,GiB $\Rightarrow$ external sorting
+    };
+\end{tikzpicture}

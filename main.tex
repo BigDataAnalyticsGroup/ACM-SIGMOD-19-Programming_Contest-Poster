@@ -107,7 +107,7 @@
             \item in-place radix sort with \emph{American Flag Sort}
             \item parallelize on first recursion: use one thread per call (work list) or all threads per call
             \item custom concurrent American Flag Sort partitioning
-            \item fall back to \lstinline{std::sort()} below certain threshold (i.e.\ \emph{introsort} with fall back to
+            \item fall back to \texttt{std::sort()} below certain threshold (i.e.\ \emph{introsort} with fall back to
                 \emph{insertion sort})
         \end{itemize}
 
@@ -118,22 +118,22 @@
 
     \headerbox{In-Memory Sorting}{name=inmemory,column=3,span=2,below=algo}{
         \begin{itemize}
-            \item use concurrent in-place American Flag Sort
-            \item \lstinline{mmap()} the entire output file and read the input file into that memory region
-            \item already partition on first byte while reading from input file
-            \item assume uniform distribution of keys
+            \item \texttt{mmap()} the entire output file and read the input file into that memory region
             \item decide whether all values $[0 - 255]$ or only printable ASCII $[32-126]$ by inspection of first $10$
                 records
-            \item don't write to disk; terminate the application $\rightarrow$ kernel takes care to write changes to the
-                \lstinline{mmap()}'d file back to disk
+            \item assume uniform distribution of keys
+            \item already partition on first byte while reading from input file
+            \item finish partitions in parallel with American Flag Sort
+            \item don't write to disk; terminate the application $\rightarrow$~kernel takes care to write changed
+                \texttt{mmap()}'d file back to disk
         \end{itemize}
     }
 
     \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
         \begin{itemize}
             \item read as much data as fits into main memory
-            \item sort that data
-            \item in parallel, partition remaining data into 256 buckets on SSD1
+            \item sort that data with parallel American Flag Sort on NUMA region~0
+            \item in parallel, partition remaining data into 256 buckets on SSD1 on NUMA region~1
             \item starting with the smallest bucket, load a bucket, sort it, then merge the bucket with the sorted in
                 memory data and write it to the output file on disk
         \end{itemize}
@@ -162,7 +162,7 @@
 
     \headerbox{Third-Party Libraries}{name=libs,column=3,span=2,below=inmemory}{
         \begin{itemize}
-            \item Agner Fog's \lstinline{asmlib} {\footnotesize (for \lstinline{memcmp()})}
+            \item Agner Fog's \texttt{asmlib} {\footnotesize (for \texttt{memcmp()})}
             \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library {\footnotesize (not in final submission)}
             \item Intel Processor Counter Monitor (PCM) {\footnotesize (not in final submission)}
         \end{itemize}

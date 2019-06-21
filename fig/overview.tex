@@ -1,4 +1,4 @@
-\begin{tikzpicture}
+\begin{tikzpicture}[remember picture]
     % Hardware
     \SSD{SSD1}{};
     \Memory[right=10mm of SSD1]{Main Memory}{};
@@ -56,11 +56,7 @@
 
     \node[above=1.5mm of record,align=center,font=\footnotesize] {3~tasks:\\10\,GB, 20\,GB, and 60\,GB};
 
-    \node[align=left, right=15mm of record] {%
-        \textbf{case analysis:}\Todo{wrong place?}
-        \\
-        \quad $< 30$\,GiB $\Rightarrow$ in-memory sorting
-        \\
-        \quad $\ge 30$\,GiB $\Rightarrow$ external sorting
+    \node[align=left, right=40mm of record] (cases) {%
+        \textbf{\Large Case Analysis}
     };
 \end{tikzpicture}

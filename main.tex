@@ -1,5 +1,7 @@
 \documentclass[a1paper,portrait,american,fontscale=.4]{baposter}
 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
 \usepackage{lipsum}
 \usepackage{listings}
 \usepackage{todo}
@@ -10,6 +12,7 @@
 \usepackage{algpseudocode}
 \usepackage{multicol}
 \usepackage{setspace}
+\usepackage{bm}
 \usepackage{tikz}
 \usetikzlibrary{
     arrows,
@@ -25,7 +28,28 @@
     shadows,
     shapes,
     shapes.multipart,
+    shapes.arrows,
 }
+
+\makeatletter
+\def\parsecomma#1,#2\endparsecomma{\def\page@x{#1}\def\page@y{#2}}
+\tikzdeclarecoordinatesystem{page}{
+    \parsecomma#1\endparsecomma
+    \pgfpointanchor{current page}{north east}
+    % Save the upper right corner
+    \pgf@xc=\pgf@x%
+    \pgf@yc=\pgf@y%
+    % save the lower left corner
+    \pgfpointanchor{current page}{south west}
+    \pgf@xb=\pgf@x%
+    \pgf@yb=\pgf@y%
+    % Transform to the correct placement
+    \pgfmathparse{(\pgf@xc-\pgf@xb)/2.*\page@x+(\pgf@xc+\pgf@xb)/2.}
+    \expandafter\pgf@x\expandafter=\pgfmathresult pt
+    \pgfmathparse{(\pgf@yc-\pgf@yb)/2.*\page@y+(\pgf@yc+\pgf@yb)/2.}
+    \expandafter\pgf@y\expandafter=\pgfmathresult pt
+}
+\makeatother
 
 \definecolor{MyColorOne}{HTML}{637462}
 \definecolor{MyColorTwo}{HTML}{b7af8a}
@@ -37,6 +61,7 @@
 \tikzstyle{ssd_screw}=[circle,fill=black!50!white,inner sep=0mm,minimum width=2mm]
 \tikzstyle{memory}=[draw,rectangle,very thick,minimum width=18mm,minimum height=40mm]
 \tikzstyle{file}=[draw,rectangle,minimum width=15mm,text width=15mm,minimum height=20mm,align=center]
+\tikzstyle{fat_arrow}=[->,>={Triangle[length=7mm,width=10mm]},line width=6mm]
 
 \newcommand{\SSD}[3][]{%
     \node[ssd,#1] (#2) {#3};
@@ -119,7 +144,47 @@
         \end{center}
     }
 
-    \headerbox{Sorting Algorithm}{name=algo,column=3,span=3}{
+    \headerbox{In-Memory Sorting}{name=inmemory,column=3,span=3}{
+        \textbf{Algorithm:}
+        \vspace{-.5em}
+        \begin{enumerate}
+            \footnotesize
+            \setlength{\itemsep}{0em}
+            \item predict record type (ASCII [32-126] or binary [0-255])
+            \item predict bucket sizes
+            \item partition into 256 buckets
+            \item sort each bucket
+        \end{enumerate}
+
+        \textbf{Tricks:}
+        \vspace{-.5em}
+        \begin{itemize}
+            \setlength{\itemsep}{0em}
+            \item avoid write to disk with \texttt{mmap()} \emph{\small\#thankskernel}
+            \item keys are uniformly distributed
+            \item partition into \texttt{mmap}'d output file while reading from disk:
+
+            \begin{minipage}{.85\linewidth}
+                \begin{algorithmic}\footnotesize
+                    \State buckets $\gets$ \texttt{mmap(...)} \Comment{consecutive memory}
+                    \For {%
+                    \tikz[remember picture]{\coordinate (algo_start);}%
+                    record $r$ \textbf{in} input file} \Comment{read from disk}
+                        \State bucket $b \gets$ buckets[$r.k_0$] \Comment{initial partitioning}
+                        \If {$b$ \textbf{is full}} \Comment{underestimated bucket size}
+                            \State append $r$ to overflow bucket $i$
+                        \Else
+                            \State append $r$ to $b$
+                        \EndIf
+                    \EndFor
+                    \State \emph{patch\_overflow()}
+                \end{algorithmic}
+            \end{minipage}
+        \end{itemize}
+    }
+
+
+    \headerbox{Sorting Algorithm}{name=algo,column=3,span=3,below=inmemory}{
         \begin{itemize}
             \item in-place radix sort with \emph{American Flag Sort}
             \item parallelize on first recursion: use one thread per call (work list) or all threads per call
@@ -131,19 +196,6 @@
         \begin{center}
             \includegraphics[scale=.05]{fig/parallel_AFS.jpg}
         \end{center}
-    }
-
-    \headerbox{In-Memory Sorting}{name=inmemory,column=3,span=2,below=algo}{
-        \begin{itemize}
-            \item \texttt{mmap()} the entire output file and read the input file into that memory region
-            \item decide whether all values $[0 - 255]$ or only printable ASCII $[32-126]$ by inspection of first $10$
-                records
-            \item assume uniform distribution of keys
-            \item already partition on first byte while reading from input file
-            \item finish partitions in parallel with American Flag Sort
-            \item don't write to disk; terminate the application $\rightarrow$~kernel takes care to write changed
-                \texttt{mmap()}'d file back to disk
-        \end{itemize}
     }
 
     \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
@@ -177,7 +229,7 @@
         \end{minipage}
     }
 
-    \headerbox{Third-Party Libraries}{name=libs,column=3,span=2,below=inmemory}{
+    \headerbox{Third-Party Libraries}{name=libs,column=3,span=2,below=algo}{
         \begin{itemize}
             \item Agner Fog's \texttt{asmlib} {\footnotesize (for \texttt{memcmp()})}
             \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library {\footnotesize (not in final submission)}
@@ -198,6 +250,19 @@
         \end{minipage}
     }
 \end{poster}
+
+\begin{tikzpicture}[overlay,remember picture]
+    \coordinate (arr_task_to_inmemory) at (page cs:0,.32);
+    \coordinate (arr_task_to_external) at (page cs:-.20,.26);
+
+    \draw[fat_arrow,draw=MyColorOne] ([xshift=-8mm]arr_task_to_inmemory) to
+        node[white,font=\ttfamily\footnotesize] {<\,30\,GiB}
+        ([xshift=8mm]arr_task_to_inmemory);
+    \draw[fat_arrow,draw=MyColorOne] ([yshift=8mm]arr_task_to_external) to
+        node[white,font=\ttfamily\footnotesize,rotate=90] {$\bm\geqslant$\,30\,GiB}
+        ([yshift=-8mm]arr_task_to_external);
+\end{tikzpicture}
+
 \vspace*{-6em}
 \begin{flushright}
     \footnotesize
@@ -211,18 +276,18 @@
 \begin{algorithm}
     \caption{In-Memory Sorting}
     \begin{algorithmic}
-        \State read first 10~records to predict record type (ASCII [32-126] or binary [0-255])
-        \State estimate bucket size for 256~buckets and uniform distribution
+        \State predict record type (ASCII [32-126] or binary [0-255])
+        \State estimate bucket sizes
         \For {record $r$ \textbf{in} input file} \Comment{read from disk}
             \State bucket\_id $i \gets r.k_0$
-            \State bucket $b \gets$ buckets[$i$]
+            \State bucket $b \gets$ buckets[$i$] \Comment{initial partitioning}
             \If {$b$ \textbf{is full}} \Comment{underestimated bucket size}
                 \State append $r$ to overflow bucket $i$
             \Else
                 \State append $r$ to $b$
             \EndIf
         \EndFor
-        \State \textit{patch\_overflow()}
+        \State patch overflow
         \For {every bucket $b$} \Comment{in parallel}
             \State \emph{american\_flag\_sort}$(b)$
         \EndFor

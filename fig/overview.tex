@@ -7,7 +7,6 @@
     \File[anchor=south,above=6mm of SSD2.south]{Output file};
     \draw[->,very thick] (Input file) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{read}} (Main Memory);
     \draw[->,very thick] (Main Memory) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{write}} (Output file);
-    %\draw[->,very thick,out=255,in=285,looseness=2.5] (Main Memory) to node[below=1mm] {\textbf{sort}} (Main Memory);
     \CPU[above=of Main Memory]{CPU1}{\emph{local}};
     \draw[<->,very thick] (CPU1) -- node[right=1mm]{\textbf{sort}} (Main Memory.north);
     \CPU[left=of CPU1]{CPU2}{\emph{remote}};

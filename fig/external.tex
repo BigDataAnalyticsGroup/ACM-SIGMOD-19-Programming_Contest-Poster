@@ -1,0 +1,38 @@
+\begin{tikzpicture}[remember picture]
+    % Hardware
+    \SSD{SSD1}{};
+    \Memory[right=12mm of SSD1]{Main Memory}{};
+    \SSD[right=12mm of Main Memory]{SSD2}{};
+    \File[anchor=south,above=6mm of SSD1.south]{Input file};
+    \File[anchor=south,above=12mm of SSD2.south]{Output file};
+
+    %\draw[->,very thick] (Input file) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{read}} (Main Memory);
+    %\draw[->,very thick] (Main Memory) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{write}} (Output file);
+
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=1mm}]
+    (Input file.north east) -- coordinate[xshift=10pt] (to_sort) ($(Input file.north east)!.48!(Input file.south east)$);
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=1mm}]
+    ($(Input file.north east)!.52!(Input file.south east)$) -- coordinate[xshift=10pt] (to_partition) (Input file.south east);
+
+    \node[draw,rectangle,minimum width=15mm,minimum height=25mm,above=6mm of Main Memory.south] (sorted) {};
+    \draw[fill=orange] (sorted.south west) -- (sorted.south east) -- (sorted.north east) -- cycle;
+
+    \node[draw,rectangle,minimum width=15mm,minimum height=4mm,above=1mm of Main Memory.south] (buffer) {};
+
+    \draw[->,orange,very thick,shorten >=2pt,out=0,in=180] (to_sort) to node[above=2mm,font=\tiny] {read\,\&\,sort} (sorted.west);
+    \draw[->,very thick,shorten >=2pt,out=0,in=180] (to_partition) to node[above=2mm,rotate=-30,xshift=2pt,font=\tiny] {read} (buffer.west);
+
+    \node[minimum width=5mm,font=\footnotesize,above=6mm of SSD2.south] (partitions) {$\cdots$};
+    \node[draw,rectangle,minimum height=7mm,minimum width=6mm,font=\footnotesize,left=1mm of partitions] (p0) {$p_0$};
+    \node[draw,rectangle,minimum height=7mm,minimum width=6mm,font=\footnotesize,right=1mm of partitions] (p2) {$p_{255}$};
+
+    \draw[->,very thick,shorten >=2mm,out=-10,in=270,looseness=1.3] (buffer) to node[below left=1mm,rotate=-13,font=\tiny] {partition} (partitions.south);
+    \draw[->,thick,out=165,in=0] (p0.west) to (buffer);
+
+    \coordinate[right=5mm of Main Memory] (merge);
+
+    \draw[fill=purple] ($(merge)+(0,.5)$) -- ($(merge)+(.5,0)$) -- ($(merge)-(0,.5)$) -- cycle;
+    \draw[->,thick,out=10,in=210] (buffer) to ($(merge)-(0,.2)$);
+    \draw[->,thick,in=150] ($(sorted.east)+(0,.5)$) to ($(merge)+(0,.2)$);
+    \draw[->,thick] ($(merge)+(.5,0)$) to (Output file.west);
+\end{tikzpicture}

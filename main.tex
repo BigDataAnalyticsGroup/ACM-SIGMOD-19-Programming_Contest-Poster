@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lipsum}
+\usepackage[]{xcolor}
 \usepackage{listings}
 \usepackage{todo}
 \usepackage{hyperref}
@@ -146,15 +147,14 @@
 
     \headerbox{In-Memory Sorting}{name=inmemory,column=3,span=3}{
         \textbf{Algorithm:}
-        \vspace{-.5em}
-        \begin{enumerate}
+        \begin{algorithmic}[1]
             \footnotesize
             \setlength{\itemsep}{0em}
-            \item predict record type (ASCII [32-126] or binary [0-255])
-            \item predict bucket sizes
-            \item partition into 256 buckets
-            \item sort each bucket
-        \end{enumerate}
+            \State predict record type (ASCII [32-126] or binary [0-255])
+            \State predict bucket sizes
+            \State partition into 256 buckets
+            \State sort each bucket
+        \end{algorithmic}
 
         \textbf{Tricks:}
         \vspace{-.5em}
@@ -166,13 +166,13 @@
 
             \begin{minipage}{.85\linewidth}
                 \begin{algorithmic}\footnotesize
-                    \State buckets $\gets$ \texttt{mmap(...)} \Comment{consecutive memory}
+                    \State buckets $\gets$ \texttt{mmap(output file, ...)} \Comment{consecutive memory}
                     \For {%
                     \tikz[remember picture]{\coordinate (algo_start);}%
                     record $r$ \textbf{in} input file} \Comment{read from disk}
                         \State bucket $b \gets$ buckets[$r.k_0$] \Comment{initial partitioning}
                         \If {$b$ \textbf{is full}} \Comment{underestimated bucket size}
-                            \State append $r$ to overflow bucket $i$
+                            \State append $r$ to overflow bucket of $b$
                         \Else
                             \State append $r$ to $b$
                         \EndIf
@@ -199,23 +199,26 @@
     }
 
     \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
-        \begin{itemize}
-            \item read as much data as fits into main memory
-            \item sort that data with parallel American Flag Sort on NUMA region~0
-            \item in parallel, partition remaining data into 256 buckets on SSD1 on NUMA region~1
-            \item starting with the smallest bucket, load a bucket, sort it, then merge the bucket with the sorted in
-                memory data and write it to the output file on disk
-        \end{itemize}
+        \textbf{Algorithm:}
+        \begin{algorithmic}[1]
+            \footnotesize
+            \State $n \gets$ number of records that fit into main memory
+            \State $s \gets$ read first $n$ records into main memory
+            \State sort $s$ \Comment{in separate thread}
+            \State partition remaining records into 256~files
+            \For {every partition file $p$, sorted by size}
+                \State merge $p$ with $s$ to output file on disk
+            \EndFor
+        \end{algorithmic}
 
         \begin{center}
-            \includegraphics[scale=.2]{fig/external_sort_1.jpg}
-            \includegraphics[scale=.2]{fig/external_sort_2.jpg}
+            \scalebox{1}{\input{fig/external.tex}}
         \end{center}
 
-        \begin{minipage}[t][66mm][c]{.53\textwidth}
-            \includegraphics[scale=.18]{fig/timeline.png}
+        \begin{minipage}[t][86mm][c]{.53\textwidth}
+            \includegraphics[scale=.15]{fig/timeline.png}
         \end{minipage}%
-        \begin{minipage}[t][66mm][c]{.47\textwidth}
+        \begin{minipage}[t][86mm][c]{.47\textwidth}
             \begin{enumerate}
                 \item Read the first $M - \epsilon$ records into main memory.
                 \item Start to sort the $M - \epsilon$ records.
@@ -251,6 +254,7 @@
     }
 \end{poster}
 
+\vspace*{-6em}
 \begin{tikzpicture}[overlay,remember picture]
     \coordinate (arr_task_to_inmemory) at (page cs:0,.32);
     \coordinate (arr_task_to_external) at (page cs:-.20,.26);
@@ -263,13 +267,6 @@
         ([yshift=-8mm]arr_task_to_external);
 \end{tikzpicture}
 
-\vspace*{-6em}
-\begin{flushright}
-    \footnotesize
-    Big~Data~Analytics~Group \\[.5em]
-    \url{bigdata.uni-saarland.de} \\[.5em]
-    Saarland~Informatics~Campus \\[.5em]
-\end{flushright}
 \clearpage
 \todos
 
@@ -297,14 +294,20 @@
 \begin{algorithm}
     \caption{External Sorting}
     \begin{algorithmic}
-        \State $n \gets$ number of records that fit into main memory $- \epsilon$
-        \State read first $n$ records into main memory
-        \State sort first $n$ records \Comment{in separate thread}
+        \State $n \gets$ number of records that fit into main memory
+        \State $s \gets$ read first $n$ records into main memory
+        \State sort $s$ \Comment{in separate thread}
         \State partition remaining records into 256~files
-        \For {every partition file $p$, sorted in ascending file size}
-            \State merge $p$ with sorted, in-memory records to output file on disk
+        \For {every partition file $p$, sorted by size}
+            \State merge $p$ with $s$ to output file on disk
         \EndFor
     \end{algorithmic}
 \end{algorithm}
+
+\begin{center}
+    \includegraphics[scale=.5]{fig/external_sort_1.jpg}
+    \includegraphics[scale=.5]{fig/external_sort_2.jpg}
+\end{center}
+
 
 \end{document}

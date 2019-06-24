@@ -6,33 +6,34 @@
     \File[anchor=south,above=6mm of SSD1.south]{Input file};
     \File[anchor=south,above=12mm of SSD2.south]{Output file};
 
-    %\draw[->,very thick] (Input file) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{read}} (Main Memory);
-    %\draw[->,very thick] (Main Memory) to node[above=1mm,sloped,fill=MyBoxBG,inner sep=1mm,opacity=.7,text opacity=1] {\textbf{write}} (Output file);
-
     \draw[decorate,decoration={brace,amplitude=6pt,raise=1mm}]
     (Input file.north east) -- coordinate[xshift=10pt] (to_sort) ($(Input file.north east)!.48!(Input file.south east)$);
     \draw[decorate,decoration={brace,amplitude=6pt,raise=1mm}]
     ($(Input file.north east)!.52!(Input file.south east)$) -- coordinate[xshift=10pt] (to_partition) (Input file.south east);
 
     \node[draw,rectangle,minimum width=15mm,minimum height=25mm,above=6mm of Main Memory.south] (sorted) {};
-    \draw[fill=orange] (sorted.south west) -- (sorted.south east) -- (sorted.north east) -- cycle;
+    \path[fill=orange] (sorted.south west) -- (sorted.south east) -- (sorted.north east) -- cycle;
+    \node[draw,rectangle,dashed,above=0mm,minimum width=4pt,minimum height=20mm,xshift=3mm] (chunk) at (sorted.south) {};
 
     \node[draw,rectangle,minimum width=15mm,minimum height=4mm,above=1mm of Main Memory.south] (buffer) {};
+    \path[fill=lime] (buffer.south west) -- (buffer.south east) -- (buffer.north east) -- cycle;
+    \path[fill=cyan] (buffer.south west) -- (buffer.north west) -- (buffer.north east) -- cycle;
 
-    \draw[->,orange,very thick,shorten >=2pt,out=0,in=180] (to_sort) to node[above=2mm,font=\tiny] {read\,\&\,sort} (sorted.west);
-    \draw[->,very thick,shorten >=2pt,out=0,in=180] (to_partition) to node[above=2mm,rotate=-30,xshift=2pt,font=\tiny] {read} (buffer.west);
+    \draw[->,orange,very thick,shorten >=2pt,out=0,in=180] (to_sort) to node[above=1mm,font=\tiny,align=center,xshift=4pt] {read\,\&\,sort\\(1-3)} (sorted.west);
+    \draw[->,cyan,very thick,shorten >=2pt,out=0,in=180] (to_partition) to node[above=1mm,rotate=-35,xshift=2pt,font=\tiny] {read~(4)} (buffer.west);
 
     \node[minimum width=5mm,font=\footnotesize,above=6mm of SSD2.south] (partitions) {$\cdots$};
-    \node[draw,rectangle,minimum height=7mm,minimum width=6mm,font=\footnotesize,left=1mm of partitions] (p0) {$p_0$};
-    \node[draw,rectangle,minimum height=7mm,minimum width=6mm,font=\footnotesize,right=1mm of partitions] (p2) {$p_{255}$};
+    \node[draw=cyan,rectangle,minimum height=7mm,minimum width=6mm,font=\footnotesize,left=1mm of partitions] (p0) {$p_0$};
+    \node[draw=cyan,rectangle,minimum height=7mm,minimum width=6mm,font=\footnotesize,right=1mm of partitions] (p2) {$p_{255}$};
 
-    \draw[->,very thick,shorten >=2mm,out=-10,in=270,looseness=1.3] (buffer) to node[below left=1mm,rotate=-13,font=\tiny] {partition} (partitions.south);
-    \draw[->,thick,out=165,in=0] (p0.west) to (buffer);
+    \draw[->,cyan,very thick,shorten >=2mm,out=-10,in=270,looseness=1.3] (buffer) to node[below left=4pt,rotate=-15,font=\tiny] {partition~(4)} (partitions.south);
+    \draw[->,lime,thick,out=165,in=0] (p0.west) to (buffer);
 
     \coordinate[right=5mm of Main Memory] (merge);
 
-    \draw[fill=purple] ($(merge)+(0,.5)$) -- ($(merge)+(.5,0)$) -- ($(merge)-(0,.5)$) -- cycle;
-    \draw[->,thick,out=10,in=210] (buffer) to ($(merge)-(0,.2)$);
-    \draw[->,thick,in=150] ($(sorted.east)+(0,.5)$) to ($(merge)+(0,.2)$);
-    \draw[->,thick] ($(merge)+(.5,0)$) to (Output file.west);
+    \draw[fill=lime] ($(merge)+(0,.5)$) -- ($(merge)+(.5,0)$) -- ($(merge)-(0,.5)$) -- cycle;
+    \node[above=6mm of merge,xshift=2mm,align=center,font=\tiny,lime] {merge\\(5-7)};
+    \draw[->,lime,thick,out=10,in=210,shorten >=1pt] (buffer) to ($(merge)-(0,.2)$);
+    \draw[->,lime,thick,in=150,shorten >=1pt] ($(chunk.east)+(0,.5)$) to ($(merge)+(0,.2)$);
+    \draw[->,lime,thick,shorten <=1pt,shorten >=1pt] ($(merge)+(.5,0)$) to (Output file.west);
 \end{tikzpicture}

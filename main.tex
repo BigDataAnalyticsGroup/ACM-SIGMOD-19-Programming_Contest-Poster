@@ -63,6 +63,9 @@
 \tikzstyle{memory}=[draw,rectangle,very thick,minimum width=18mm,minimum height=40mm]
 \tikzstyle{file}=[draw,rectangle,minimum width=15mm,text width=15mm,minimum height=20mm,align=center]
 \tikzstyle{fat_arrow}=[->,>={Triangle[length=7mm,width=10mm]},line width=6mm]
+\tikzset{
+    >=latex
+}
 
 \newcommand{\SSD}[3][]{%
     \node[ssd,#1] (#2) {#3};

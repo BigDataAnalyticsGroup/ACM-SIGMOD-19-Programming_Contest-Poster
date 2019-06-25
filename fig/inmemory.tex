@@ -9,15 +9,15 @@
     \File[anchor=south,above=6mm of SSD2.south]{Output file};
 
     \begin{scope}[start chain=going below,node distance=0mm,local bounding box=array]
-        \node[part,below=10mm of Main Memory.north] (a0) {};
-        \node[part] (a1) {};
-        \node[part] (a2) {};
-        \node[part] (a3) {};
+        \node[part,font=\tiny,below=10mm of Main Memory.north] (a0) {$p_0$};
+        \node[part,font=\tiny] (a1) {$p_1$};
+        \node[part,font=\tiny] (a2) {$p_2$};
+        \node[part,font=\tiny] (a3) {$p_3$};
         \node[on chain,minimum height=5mm,font=\footnotesize] {\rvdots};
-        \node[part] (a4) {};
-        \node[part] (a5) {};
-        \node[part] (a6) {};
-        \node[part] (a7) {};
+        \node[part,font=\tiny] (a4) {$p_{252}$};
+        \node[part,font=\tiny] (a5) {$p_{253}$};
+        \node[part,font=\tiny] (a6) {$p_{254}$};
+        \node[part,font=\tiny] (a7) {$p_{255}$};
     \end{scope}
 
     \draw[draw=blue!60,shorten <= 1mm,shorten >=1mm] (array.north east) -- node[above=1mm,xshift=-1mm,font=\tiny] {\texttt{mmap()}} (Output file.north west);

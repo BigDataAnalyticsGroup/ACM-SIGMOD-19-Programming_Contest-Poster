@@ -1,0 +1,56 @@
+\begin{tikzpicture}[remember picture]
+    \tikzstyle{part}=[on chain,draw,rectangle,minimum width=12mm,minimum height=2.5mm]
+
+    % Hardware
+    \SSD{SSD1}{};
+    \Memory[right=12mm of SSD1]{Main Memory}{};
+    \SSD[right=12mm of Main Memory]{SSD2}{};
+    \File[anchor=south,above=6mm of SSD1.south]{Input file};
+    \File[anchor=south,above=6mm of SSD2.south]{Output file};
+
+    \begin{scope}[start chain=going below,node distance=0mm,local bounding box=array]
+        \node[part,below=10mm of Main Memory.north] (a0) {};
+        \node[part] (a1) {};
+        \node[part] (a2) {};
+        \node[part] (a3) {};
+        \node[on chain,minimum height=5mm,font=\footnotesize] {\rvdots};
+        \node[part] (a4) {};
+        \node[part] (a5) {};
+        \node[part] (a6) {};
+        \node[part] (a7) {};
+    \end{scope}
+
+    \draw[draw=blue!60,shorten <= 1mm,shorten >=1mm] (array.north east) -- node[above=1mm,xshift=-1mm,font=\tiny] {\texttt{mmap()}} (Output file.north west);
+    \draw[draw=blue!60,shorten <= 1mm,shorten >=1mm] (array.south east) -- (Output file.south west);
+
+    \coordinate (split) at ($(Input file.east)!.5!(array.west)$);
+    \draw[-,very thick,out=0,in=180] (Input file.east) to ([xshift=3pt]split);
+    \draw[->,out=0,in=180] (split) to (a0);
+    \draw[->,out=0,in=180] (split) to (a1);
+    \draw[->,out=0,in=180] (split) to (a2);
+    \draw[->,out=0,in=180] (split) to (a3);
+    \draw[->,out=0,in=180] (split) to (a4);
+    \draw[->,out=0,in=180] (split) to (a5);
+    \draw[->,out=0,in=180] (split) to (a6);
+    \draw[->,out=0,in=180] (split) to (a7);
+    %\draw[->,out=0,in=180] (split) to (a8);
+    \node[above=12mm of split,xshift=2mm,font=\tiny,align=center,text width=12mm] {partition while reading};
+
+    \begin{scope}[start chain=going right,node distance=0mm,local bounding box=overflow]
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt,anchor=north west,yshift=-4pt] at (a7.south west) {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+        \node[on chain,draw,rectangle,minimum width=3pt,minimum height=5pt] {};
+    \end{scope}
+    \draw[->,MyOrange,out=0,in=180] (split) to node[font=\tiny,below=4mm,xshift=-4mm] {overflow} (overflow);
+
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=3mm}]
+    (overflow.south east) -- node[below=6mm] {\tiny 256~overflow buckets} (overflow.south west);
+\end{tikzpicture}

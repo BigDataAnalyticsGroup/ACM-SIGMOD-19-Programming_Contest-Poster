@@ -33,6 +33,7 @@
     shapes.arrows,
 }
 
+% TikZ coordinate system for whole page
 \makeatletter
 \def\parsecomma#1,#2\endparsecomma{\def\page@x{#1}\def\page@y{#2}}
 \tikzdeclarecoordinatesystem{page}{
@@ -51,6 +52,16 @@
     \pgfmathparse{(\pgf@yc-\pgf@yb)/2.*\page@y+(\pgf@yc+\pgf@yb)/2.}
     \expandafter\pgf@y\expandafter=\pgfmathresult pt
 }
+\makeatother
+
+% vertical dots outside math mode
+\makeatletter
+\DeclareRobustCommand{\rvdots}{%
+    \vbox{
+        \baselineskip3\p@\lineskiplimit\z@
+        \kern-\p@
+        \hbox{.}\hbox{.}\hbox{.}
+}}
 \makeatother
 
 \definecolor{MyColorOne}{HTML}{637462}
@@ -158,20 +169,22 @@
             \footnotesize
             \setlength{\itemsep}{0em}
             \State predict record type (ASCII [32-126] or binary [0-255])
-            \State predict bucket sizes
+            \State estimate bucket sizes
             \State partition into 256 buckets
             \State sort each bucket
         \end{algorithmic}
 
-        \Todo{Figure similar to external sorting that explains the memory mapping and how partitioning is piggy-backed
-        on reading.}
+        \begin{center}
+            \input{fig/inmemory.tex}
+        \end{center}
 
+        \vspace*{-5pt}
         \textbf{Tricks:}
         \vspace{-.5em}
         \begin{itemize}
             \setlength{\itemsep}{0em}
             \item avoid write to disk with \texttt{mmap()} \emph{\small\#thankskernel}
-            \item keys are uniformly distributed
+            \item keys are uniformly distributed; no skew
             \item partition into \texttt{mmap}'d output file while reading from disk:
 
             \begin{minipage}{.85\linewidth}
@@ -198,6 +211,7 @@
         \textbf{Overview:}
         \vspace{-.5em}
         \begin{itemize}
+            \setlength{\itemsep}{0em}
             \item in-place radix sort: \emph{American Flag Sort}
             \item extended with parallel partitioning algorithm
             \item parallelize on recursion: use one thread per call (work list) or all threads per call
@@ -205,16 +219,20 @@
                 with fall back to \emph{insertion sort})
         \end{itemize}
 
+        \vspace*{-7mm}
         \begin{center}
             \input{fig/sorting_algo.tex}
         \end{center}
 
+        \vspace*{-2mm}
         \textbf{Details:}
         \vspace{-.5em}
         \begin{itemize}
+            \setlength{\itemsep}{0em}
             \item two atomic counters per partition:
                 \vspace{-.5em}
                 \begin{itemize}
+                    \setlength{\itemsep}{0em}
                     \item one counter for position of the head
                     \item one counter for position of the tail
                 \end{itemize}
@@ -222,6 +240,7 @@
             \item avoid cache contention
                 \vspace{-.5em}
                 \begin{itemize}
+                    \setlength{\itemsep}{0em}
                     \item pad counter to 64\,Bytes $\Rightarrow$ one cache line per counter
                     \item with $256$ partitions requires exactly 32\,KiB cache (L1D)
                 \end{itemize}
@@ -242,52 +261,41 @@
         \end{algorithmic}
 
         \begin{center}
-            \scalebox{1}{\input{fig/external.tex}}
+            \input{fig/external.tex}
         \end{center}
 
-        \begin{minipage}[t][86mm][c]{.53\textwidth}
-            \includegraphics[scale=.15]{fig/timeline.png}
-        \end{minipage}%
-        \begin{minipage}[t][86mm][c]{.47\textwidth}
-            \begin{enumerate}
-                \item Read the first $M - \epsilon$ records into main memory.
-                \item Start to sort the $M - \epsilon$ records.
-                \item[2'.] Concurrently read the remaining $N - (M - \epsilon)$ records and partition them into $256$ buckets
-                    on SSD1.
-
-                \item Load the next smallest partition into main memory.
-                \item Sort the records in the partition.
-                \item Merge the sorted partition with the sorted in-memory data and write to output file on SSD1.
-            \end{enumerate}
-        \end{minipage}
+        \includegraphics[scale=.18]{fig/timeline.png}
+        \Todo{use space}
     }
 
-    \headerbox{Third-Party Libraries}{name=libs,column=3,span=2,below=algo}{
+    \headerbox{Third-Party Libraries}{name=libs,column=0,span=3,below=external}{
         \begin{itemize}
+            \setlength{\itemsep}{0em}
             \item Agner Fog's \texttt{asmlib} {\footnotesize (for \texttt{memcmp()})}
             \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library {\footnotesize (not in final submission)}
             \item Intel Processor Counter Monitor (PCM) {\footnotesize (not in final submission)}
         \end{itemize}
     }
 
-    \headerbox{Source Code}{name=code,column=3,span=2,below=libs}{
-        \begin{minipage}[b]{.65\linewidth}
-            The source code is available on Github and licensed under Apache~v2.
-        \end{minipage}%
-        \begin{minipage}[t]{.35\linewidth}
-            \begin{flushright}
-                \qrcode[height=22mm]{https://git.io/fjazH}
-                \\[.5em]
-                \mbox{\url{git.io/fjazH}}
-            \end{flushright}
-        \end{minipage}
+    \headerbox{Ranking}{name=eval,column=3,span=2,below=algo}{
+        \textbullet\,preliminary third place
+        \textbullet\,best in \emph{Small} with~17\,\% margin
+        \textbullet\,best in \emph{Medium} with~12\,\% margin
+        \textbullet\,fifth in \emph{Large} with~15\,\% margin
     }
 \end{poster}
 
+\vspace*{-30mm}
+\begin{flushright}
+    \qrcode[height=20mm]{https://git.io/fjazH}
+    \\[.5em]
+    \hfill\mbox{\small\url{git.io/fjazH}}
+\end{flushright}
+
 \vspace*{-6em}
 \begin{tikzpicture}[overlay,remember picture]
-    \coordinate (arr_task_to_inmemory) at (page cs:0,.32);
-    \coordinate (arr_task_to_external) at (page cs:-.20,.26);
+    \coordinate (arr_task_to_inmemory) at (page cs:0,.33);
+    \coordinate (arr_task_to_external) at (page cs:-.20,.265);
 
     \draw[fat_arrow,draw=MyColorOne] ([xshift=-8mm]arr_task_to_inmemory) to
         node[white,font=\ttfamily\footnotesize] {<\,30\,GiB}

@@ -1,0 +1,49 @@
+\begin{tikzpicture}[
+    part/.style={on chain,draw,minimum width=2.5mm,minimum height=15mm,font=\tiny},
+    arr/.style={<->,very thick,shorten <=1mm,shorten >=1mm,out=45,in=135,red},
+    node distance=-\pgflinewidth
+    ]
+    \begin{scope}[start chain=going right,local bounding box=array]
+        \node[part,fill=MyCyan,minimum width=5mm] (head1) {};
+        \node[part,fill=red] (curr1) {};
+        \node[part,minimum width=8mm] {};
+        \node[part,fill=MyLime] (tail1) {};
+
+        \node[part,fill=MyCyan,xshift=.5\pgflinewidth,minimum width=7mm] (head2) {};
+        \node[part,fill=red] (curr2) {};
+        \node[part,minimum width=10mm] {};
+        \node[part,fill=MyLime] (tail2) {};
+
+        \node[on chain,minimum width=10mm] {};
+
+        \node[part,fill=MyCyan] (head3) {};
+        \node[part,fill=red] (curr3) {};
+        \node[part,minimum width=10mm] {};
+        \node[part,fill=MyLime,minimum width=7mm] (tail3) {};
+
+        \node[part,fill=MyCyan,xshift=.5\pgflinewidth] (head4) {};
+        \node[part,fill=red] (curr4) {};
+        \node[part,minimum width=10mm] {};
+        \node[part,fill=MyLime,minimum width=5mm] (tail4) {};
+    \end{scope}
+
+    \draw[very thick] (tail2.north east) -- (head1.north west) -- (head1.south west) -- (tail2.south east);
+    \draw[very thick,dashed] (tail2.north east) -- (head3.north west);
+    \draw[very thick,dashed] (tail2.south east) -- (head3.south west);
+    \draw[very thick] (head3.north west) -- (tail4.north east) -- (tail4.south east) -- (head3.south west);
+
+    \draw[arr] (curr1.north) to node[above=1mm,font=\tiny,black] {swap} (tail4.north west);
+    \draw[arr] (curr2.north) to node[above=1mm,font=\tiny,black] {swap} (tail3.north west);
+
+    \draw[->,>=stealth'] ([yshift=-1mm]head1.south west) to ([yshift=-1mm]head1.south east);
+    \draw[<-,>=stealth'] ([yshift=-1mm]tail1.south west) to ([yshift=-1mm]tail1.south east);
+
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=3mm}] ([xshift=-1pt]tail1.south east) -- node[below=6mm,font=\footnotesize] {$p_0$} ([xshift=1pt]head1.south west);
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=3mm}] ([xshift=-1pt]tail2.south east) -- node[below=6mm,font=\footnotesize] {$p_1$} ([xshift=1pt]head2.south west);
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=3mm}] ([xshift=-1pt]tail3.south east) -- node[below=6mm,font=\footnotesize] {$p_{254}$} ([xshift=1pt]head3.south west);
+    \draw[decorate,decoration={brace,amplitude=6pt,raise=3mm}] ([xshift=-1pt]tail4.south east) -- node[below=6mm,font=\footnotesize] {$p_{255}$} ([xshift=1pt]head4.south west);
+    \node[below=5mm] at ($(tail2.south east)!.5!(head3.south west)$) {$\cdots$};
+
+    \node[font=\tiny,rotate=-45,anchor=east,above left=2pt of curr1.north,yshift=1pt] (thread1) {Thread 1};
+    \node[font=\tiny,rotate=-45,anchor=east,above left=2pt of curr2.north,yshift=1pt] (thread2) {Thread 2};
+\end{tikzpicture}

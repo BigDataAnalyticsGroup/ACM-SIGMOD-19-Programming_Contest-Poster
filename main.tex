@@ -1,9 +1,10 @@
+\PassOptionsToPackage{table}{xcolor}
 \documentclass[a1paper,portrait,american,fontscale=.4]{baposter}
+\selectcolormodel{HTML}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lipsum}
-\usepackage[]{xcolor}
 \usepackage{listings}
 \usepackage{todo}
 \usepackage{hyperref}
@@ -56,6 +57,9 @@
 \definecolor{MyColorTwo}{HTML}{b7af8a}
 \definecolor{MyColorThree}{HTML}{ccb15a}
 \colorlet{MyBoxBG}{white!96!black}
+\colorlet{MyLime}{lime!92!black}
+\colorlet{MyOrange}{orange!95!black}
+\colorlet{MyCyan}{cyan!70!blue}
 
 \tikzstyle{rect}=[draw,rectangle,thick,on chain,font=\tiny,inner sep=.5mm,minimum height=1.2em]
 \tikzstyle{ssd}=[draw,rectangle,rounded corners,very thick,minimum width=3cm,minimum height=4cm]
@@ -159,6 +163,9 @@
             \State sort each bucket
         \end{algorithmic}
 
+        \Todo{Figure similar to external sorting that explains the memory mapping and how partitioning is piggy-backed
+        on reading.}
+
         \textbf{Tricks:}
         \vspace{-.5em}
         \begin{itemize}
@@ -188,17 +195,37 @@
 
 
     \headerbox{Sorting Algorithm}{name=algo,column=3,span=3,below=inmemory}{
+        \textbf{Overview:}
+        \vspace{-.5em}
         \begin{itemize}
-            \item in-place radix sort with \emph{American Flag Sort}
-            \item parallelize on first recursion: use one thread per call (work list) or all threads per call
-            \item custom concurrent American Flag Sort partitioning
-            \item fall back to \texttt{std::sort()} below certain threshold (i.e.\ \emph{introsort} with fall back to
-                \emph{insertion sort})
+            \item in-place radix sort: \emph{American Flag Sort}
+            \item extended with parallel partitioning algorithm
+            \item parallelize on recursion: use one thread per call (work list) or all threads per call
+            \item fall back to \texttt{std::sort()} on recursion if number of records is small (i.e.\ \emph{introsort}
+                with fall back to \emph{insertion sort})
         \end{itemize}
 
         \begin{center}
-            \includegraphics[scale=.05]{fig/parallel_AFS.jpg}
+            \input{fig/sorting_algo.tex}
         \end{center}
+
+        \textbf{Details:}
+        \vspace{-.5em}
+        \begin{itemize}
+            \item two atomic counters per partition:
+                \vspace{-.5em}
+                \begin{itemize}
+                    \item one counter for position of the head
+                    \item one counter for position of the tail
+                \end{itemize}
+                \vspace*{-.5em}
+            \item avoid cache contention
+                \vspace{-.5em}
+                \begin{itemize}
+                    \item pad counter to 64\,Bytes $\Rightarrow$ one cache line per counter
+                    \item with $256$ partitions requires exactly 32\,KiB cache (L1D)
+                \end{itemize}
+        \end{itemize}
     }
 
     \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
@@ -272,45 +299,5 @@
 
 \clearpage
 \todos
-
-\begin{algorithm}
-    \caption{In-Memory Sorting}
-    \begin{algorithmic}
-        \State predict record type (ASCII [32-126] or binary [0-255])
-        \State estimate bucket sizes
-        \For {record $r$ \textbf{in} input file} \Comment{read from disk}
-            \State bucket\_id $i \gets r.k_0$
-            \State bucket $b \gets$ buckets[$i$] \Comment{initial partitioning}
-            \If {$b$ \textbf{is full}} \Comment{underestimated bucket size}
-                \State append $r$ to overflow bucket $i$
-            \Else
-                \State append $r$ to $b$
-            \EndIf
-        \EndFor
-        \State patch overflow
-        \For {every bucket $b$} \Comment{in parallel}
-            \State \emph{american\_flag\_sort}$(b)$
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
-
-\begin{algorithm}
-    \caption{External Sorting}
-    \begin{algorithmic}
-        \State $n \gets$ number of records that fit into main memory
-        \State $s \gets$ read first $n$ records into main memory
-        \State sort $s$ \Comment{in separate thread}
-        \State partition remaining records into 256~files
-        \For {every partition file $p$, sorted by size}
-            \State merge $p$ with $s$ to output file on disk
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
-
-\begin{center}
-    \includegraphics[scale=.5]{fig/external_sort_1.jpg}
-    \includegraphics[scale=.5]{fig/external_sort_2.jpg}
-\end{center}
-
 
 \end{document}

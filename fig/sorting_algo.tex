@@ -4,10 +4,10 @@
     node distance=-\pgflinewidth
     ]
     \begin{scope}[start chain=going right,local bounding box=array]
-        \node[part,fill=MyCyan,minimum width=5mm] (head1) {};
-        \node[part,fill=red] (curr1) {};
+        \node[part,fill=MyCyan,minimum width=5mm] (head1) {\rotatebox{90}{head}};
+        \node[part,fill=red] (curr1) {\rotatebox{90}{current}};
         \node[part,minimum width=8mm] {};
-        \node[part,fill=MyLime] (tail1) {};
+        \node[part,fill=MyLime] (tail1) {\rotatebox{90}{tail}};
 
         \node[part,fill=MyCyan,xshift=.5\pgflinewidth,minimum width=7mm] (head2) {};
         \node[part,fill=red] (curr2) {};

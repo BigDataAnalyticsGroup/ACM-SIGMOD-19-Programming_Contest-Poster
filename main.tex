@@ -15,12 +15,15 @@
 \usepackage{multicol}
 \usepackage{setspace}
 \usepackage{bm}
+\usepackage{marvosym}
+\usepackage{amssymb}
 \usepackage{tikz}
 \usetikzlibrary{
     arrows,
     arrows.meta,
     backgrounds,
     calc,
+    fit,
     chains,
     decorations,
     decorations.pathreplacing,
@@ -64,13 +67,15 @@
 }}
 \makeatother
 
-\definecolor{MyColorOne}{HTML}{637462}
-\definecolor{MyColorTwo}{HTML}{b7af8a}
-\definecolor{MyColorThree}{HTML}{ccb15a}
+%\definecolor{MyColorOne}{HTML}{637462}
+%\definecolor{MyColorTwo}{HTML}{b7af8a}
+%\definecolor{MyColorThree}{HTML}{ccb15a}
 \colorlet{MyBoxBG}{white!96!black}
 \colorlet{MyLime}{lime!92!black}
 \colorlet{MyOrange}{orange!95!black}
 \colorlet{MyCyan}{cyan!70!blue}
+\colorlet{MyColorOne}{black}
+\colorlet{MyColorTwo}{black!30}
 
 \tikzstyle{rect}=[draw,rectangle,thick,on chain,font=\tiny,inner sep=.5mm,minimum height=1.2em]
 \tikzstyle{ssd}=[draw,rectangle,rounded corners,very thick,minimum width=3cm,minimum height=4cm]
@@ -171,7 +176,7 @@
             \State predict record type (ASCII [32-126] or binary [0-255])
             \State estimate bucket sizes
             \State partition into 256 buckets
-            \State sort each bucket
+            \State sort each bucket with \emph{sicsort}
         \end{algorithmic}
 
         \begin{center}
@@ -206,17 +211,46 @@
         \end{itemize}
     }
 
+    \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
+        \textbf{Algorithm:}
+        \begin{algorithmic}[1]
+            \footnotesize
+            \State $n \gets$ number of records that fit into main memory
+            \State $s \gets$ read first $n$ records into main memory
+            \State sort $s$ with \emph{sicsort} \Comment{in separate thread}
+            \State partition remaining records into 256~files
+            \For {every partition file $p$, sorted by size}
+                \State merge $p$ with $s$ to output file on disk
+            \EndFor
+        \end{algorithmic}
 
-    \headerbox{Sorting Algorithm}{name=algo,column=3,span=3,below=inmemory}{
+        \begin{center}
+            \input{fig/external.tex}
+        \end{center}
+
+        \vspace{-6mm}
+        \begin{center}
+            \input{fig/timeline.tex}
+        \end{center}
+    }
+
+    \headerbox{Third-Party Libraries}{name=libs,column=0,span=3,below=external}{
+        \begin{itemize}
+            \setlength{\itemsep}{0em}
+            \item Agner Fog's \texttt{asmlib} {\footnotesize (for \texttt{memcmp()})}
+            \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library {\footnotesize (not in final submission)}
+            \item Intel Processor Counter Monitor (PCM) {\footnotesize (not in final submission)}
+        \end{itemize}
+    }
+
+    \headerbox{Sorting Algorithm \emph{sicsort}}{name=algo,column=3,span=3,below=inmemory}{
         \textbf{Overview:}
         \vspace{-.5em}
         \begin{itemize}
             \setlength{\itemsep}{0em}
             \item in-place radix sort: \emph{American Flag Sort}
-            \item extended with parallel partitioning algorithm
             \item parallelize on recursion: use one thread per call (work list) or all threads per call
-            \item fall back to \texttt{std::sort()} on recursion if number of records is small (i.e.\ \emph{introsort}
-                with fall back to \emph{insertion sort})
+            \item extended with parallel partitioning algorithm:
         \end{itemize}
 
         \vspace*{-7mm}
@@ -229,6 +263,8 @@
         \vspace{-.5em}
         \begin{itemize}
             \setlength{\itemsep}{0em}
+            \item fall back to \texttt{std::sort()} on recursion if number of records is small (i.e.\ \emph{introsort}
+                with fall back to \emph{insertion sort})
             \item two atomic counters per partition:
                 \vspace{-.5em}
                 \begin{itemize}
@@ -247,62 +283,47 @@
         \end{itemize}
     }
 
-    \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
-        \textbf{Algorithm:}
-        \begin{algorithmic}[1]
-            \footnotesize
-            \State $n \gets$ number of records that fit into main memory
-            \State $s \gets$ read first $n$ records into main memory
-            \State sort $s$ \Comment{in separate thread}
-            \State partition remaining records into 256~files
-            \For {every partition file $p$, sorted by size}
-                \State merge $p$ with $s$ to output file on disk
-            \EndFor
-        \end{algorithmic}
-
-        \begin{center}
-            \input{fig/external.tex}
-        \end{center}
-
-        \includegraphics[scale=.18]{fig/timeline.png}
-        \Todo{use space}
-    }
-
-    \headerbox{Third-Party Libraries}{name=libs,column=0,span=3,below=external}{
+    \headerbox{Ranking}{name=eval,column=0,span=3,below=libs}{
         \begin{itemize}
             \setlength{\itemsep}{0em}
-            \item Agner Fog's \texttt{asmlib} {\footnotesize (for \texttt{memcmp()})}
-            \item CTPL: Modern and Efficient C\texttt{++} Thread Pool Library {\footnotesize (not in final submission)}
-            \item Intel Processor Counter Monitor (PCM) {\footnotesize (not in final submission)}
+            \item preliminary third place
+            \item best in \emph{Small} (10\,GB) with~17\,\% margin to second
+            \item best in \emph{Medium} (20\,GB) with~12\,\% margin to second
+            \item fifth in \emph{Large} (60\,GB) with~15\,\% margin to best
         \end{itemize}
     }
-
-    \headerbox{Ranking}{name=eval,column=3,span=2,below=algo}{
-        \textbullet\,preliminary third place
-        \textbullet\,best in \emph{Small} with~17\,\% margin
-        \textbullet\,best in \emph{Medium} with~12\,\% margin
-        \textbullet\,fifth in \emph{Large} with~15\,\% margin
-    }
 \end{poster}
-
-\vspace*{-30mm}
-\begin{flushright}
-    \qrcode[height=20mm]{https://git.io/fjazH}
-    \\[.5em]
-    \hfill\mbox{\small\url{git.io/fjazH}}
-\end{flushright}
 
 \vspace*{-6em}
 \begin{tikzpicture}[overlay,remember picture]
     \coordinate (arr_task_to_inmemory) at (page cs:0,.33);
     \coordinate (arr_task_to_external) at (page cs:-.20,.265);
+    \coordinate (arr_extern_uses) at (page cs:0,-.33);
+    \coordinate (arr_inmemory_uses) at (page cs:.75,-.03);
 
+    % < 30 GiB
     \draw[fat_arrow,draw=MyColorOne] ([xshift=-8mm]arr_task_to_inmemory) to
         node[white,font=\ttfamily\footnotesize] {<\,30\,GiB}
         ([xshift=8mm]arr_task_to_inmemory);
+    % ≥ 30 GiB
     \draw[fat_arrow,draw=MyColorOne] ([yshift=8mm]arr_task_to_external) to
         node[white,font=\ttfamily\footnotesize,rotate=90] {$\bm\geqslant$\,30\,GiB}
         ([yshift=-8mm]arr_task_to_external);
+
+    % extern uses algo
+    \draw[fat_arrow,draw=MyColorOne] ([xshift=-8mm]arr_extern_uses) to
+        node[white,font=\small] {uses}
+        ([xshift=8mm]arr_extern_uses);
+    % in-memory uses algo
+    \draw[fat_arrow,draw=MyColorOne] ([yshift=8mm]arr_inmemory_uses) to
+        node[white,font=\small,rotate=90] {uses}
+        ([yshift=-8mm]arr_inmemory_uses);
+
+    \node[anchor=north east,align=right,inner sep=6mm] at (page cs:1,1) {%
+        \qrcode[height=20mm]{https://git.io/fjazH}
+        \\[.5em]
+        \hfill\mbox{\small\url{git.io/fjazH}}
+    };
 \end{tikzpicture}
 
 \clearpage

@@ -1,0 +1,11 @@
+\begin{tikzpicture}
+    \tikzstyle{box}=[rectangle,align=center,font=\footnotesize,inner sep=0pt]
+    \draw[-triangle 60,thick] (0,0) -- (10,0);
+    \draw[dashed] (0,1.7) -- (9.6,1.7);
+    \node[below=.5em,anchor=north east,font=\itshape] at (10,0) {Time};
+
+    \node[box,fill=MyOrange!90,fit={(0,3.0)(1.82,1.8)}] {read at 516\,MiB/s\\(51.5\,sec)};
+    \node[box,fill=MyOrange!90,fit={(1.82,3.0)(3.2,1.8)},xshift=1pt] {sort\\(39.2\,sec)};
+    \node[box,fill=MyCyan!90,fit={(1.82,0.1)(4.08,1.6)},xshift=1pt] {read, partition, write at~477\,MiB/s\\(64\,sec)};
+    \node[box,fill=MyLime!90,fit={(4.1,3.0)(9.5,1.8)},xshift=2pt] {merge at~202\,MiB/s (283\,sec)~\textcolor{yellow}{\large\Lightning}};
+\end{tikzpicture}

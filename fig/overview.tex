@@ -1,4 +1,4 @@
-\begin{tikzpicture}[remember picture]
+\begin{tikzpicture}
     % Hardware
     \SSD{SSD1}{};
     \Memory[right=10mm of SSD1]{Main Memory}{};
@@ -54,8 +54,4 @@
     \draw[draw=blue!60,shorten >=1mm] (zoom.east) -- (record.north east);
 
     \node[above=1.5mm of record,align=center,font=\footnotesize] {3~tasks:\\10\,GB, 20\,GB, and 60\,GB};
-
-    \node[align=left, right=40mm of record,yshift=2mm] (cases) {%
-        \textbf{\Large Case Analysis}
-    };
 \end{tikzpicture}

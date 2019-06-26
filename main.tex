@@ -67,15 +67,15 @@
 }}
 \makeatother
 
-%\definecolor{MyColorOne}{HTML}{637462}
-%\definecolor{MyColorTwo}{HTML}{b7af8a}
-%\definecolor{MyColorThree}{HTML}{ccb15a}
-\colorlet{MyBoxBG}{white!96!black}
+\definecolor{MyColorOne}{HTML}{637462}
+\definecolor{MyColorTwo}{HTML}{b7af8a}
+\definecolor{MyColorThree}{HTML}{ccb15a}
+\colorlet{MyBoxBG}{white!94!black}
 \colorlet{MyLime}{lime!92!black}
 \colorlet{MyOrange}{orange!95!black}
 \colorlet{MyCyan}{cyan!70!blue}
-\colorlet{MyColorOne}{black}
-\colorlet{MyColorTwo}{black!30}
+%\colorlet{MyColorOne}{black}
+%\colorlet{MyColorTwo}{black!30}
 
 \tikzstyle{rect}=[draw,rectangle,thick,on chain,font=\tiny,inner sep=.5mm,minimum height=1.2em]
 \tikzstyle{ssd}=[draw,rectangle,rounded corners,very thick,minimum width=3cm,minimum height=4cm]
@@ -213,6 +213,8 @@
 
     \headerbox{External Memory Sorting}{name=external,column=0,span=3,below=task}{
         \textbf{Algorithm:}
+        \vskip 2pt
+        \begin{minipage}{.8\linewidth}
         \begin{algorithmic}[1]
             \footnotesize
             \State $n \gets$ number of records that fit into main memory
@@ -223,6 +225,7 @@
                 \State merge $p$ with $s$ to output file on disk
             \EndFor
         \end{algorithmic}
+        \end{minipage}
 
         \begin{center}
             \input{fig/external.tex}
@@ -244,16 +247,22 @@
     }
 
     \headerbox{Sorting Algorithm \emph{sicsort}}{name=algo,column=3,span=3,below=inmemory}{
-        \textbf{Overview:}
-        \vspace{-.5em}
-        \begin{itemize}
-            \setlength{\itemsep}{0em}
-            \item in-place radix sort: \emph{American Flag Sort}
-            \item parallelize on recursion: use one thread per call (work list) or all threads per call
-            \item extended with parallel partitioning algorithm:
-        \end{itemize}
+        \textbf{Alorithm:}
+        \begin{algorithmic}[1]
+            \footnotesize
+            \State compute histogram
+            \State compute partition boundaries
+            \For{every record $r$}
+                \If {$r$ in right partition}
+                    \State proceed to next record
+                \Else
+                    \State $p \gets$ destination partition of $r$
+                    \State swap $r$ with unpartitioned record of $p$
+                \EndIf
+            \EndFor
+        \end{algorithmic}
 
-        \vspace*{-7mm}
+        \vspace*{-5mm}
         \begin{center}
             \input{fig/sorting_algo.tex}
         \end{center}
@@ -263,21 +272,17 @@
         \vspace{-.5em}
         \begin{itemize}
             \setlength{\itemsep}{0em}
+            \item based on \emph{American Flag Sort}, an in-place radix sort
+            \item extended with parallel partitioning (see figure above)
+            \item parallelize recursion into partition
             \item fall back to \texttt{std::sort()} on recursion if number of records is small (i.e.\ \emph{introsort}
                 with fall back to \emph{insertion sort})
-            \item two atomic counters per partition:
-                \vspace{-.5em}
-                \begin{itemize}
-                    \setlength{\itemsep}{0em}
-                    \item one counter for position of the head
-                    \item one counter for position of the tail
-                \end{itemize}
-                \vspace*{-.5em}
+            \item atomic counter for head and tail of each partition
             \item avoid cache contention
                 \vspace{-.5em}
                 \begin{itemize}
                     \setlength{\itemsep}{0em}
-                    \item pad counter to 64\,Bytes $\Rightarrow$ one cache line per counter
+                    \item pad counters to 64\,Bytes $\Rightarrow$ one cache line per counter
                     \item with $256$ partitions requires exactly 32\,KiB cache (L1D)
                 \end{itemize}
         \end{itemize}
@@ -287,8 +292,8 @@
         \begin{itemize}
             \setlength{\itemsep}{0em}
             \item preliminary third place
-            \item best in \emph{Small} (10\,GB) with~17\,\% margin to second
-            \item best in \emph{Medium} (20\,GB) with~12\,\% margin to second
+            \item first in \emph{Small} (10\,GB) with~17\,\% margin to second
+            \item first in \emph{Medium} (20\,GB) with~12\,\% margin to second
             \item fifth in \emph{Large} (60\,GB) with~15\,\% margin to best
         \end{itemize}
     }
@@ -298,7 +303,7 @@
 \begin{tikzpicture}[overlay,remember picture]
     \coordinate (arr_task_to_inmemory) at (page cs:0,.33);
     \coordinate (arr_task_to_external) at (page cs:-.20,.265);
-    \coordinate (arr_extern_uses) at (page cs:0,-.33);
+    \coordinate (arr_extern_uses) at (page cs:0,-.35);
     \coordinate (arr_inmemory_uses) at (page cs:.75,-.03);
 
     % < 30 GiB

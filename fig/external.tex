@@ -32,7 +32,7 @@
     \coordinate[right=5mm of Main Memory] (merge);
 
     \draw[fill=MyLime] ($(merge)+(0,.5)$) -- ($(merge)+(.5,0)$) -- ($(merge)-(0,.5)$) -- cycle;
-    \node[above=6mm of merge,xshift=2mm,align=center,font=\tiny,MyLime] {merge\\(5-7)};
+    \node[above=6mm of merge,xshift=2mm,align=center,font=\tiny,MyLime!80!black] {merge\\(5-7)};
     \draw[->,MyLime,thick,out=10,in=210,shorten >=1pt] (buffer) to ($(merge)-(0,.2)$);
     \draw[->,MyLime,thick,in=150,shorten >=1pt] ($(chunk.east)+(0,.5)$) to ($(merge)+(0,.2)$);
     \draw[->,MyLime,thick,shorten <=1pt,shorten >=1pt,out=0,in=180] ($(merge)+(.5,0)$) to (Output file.west);

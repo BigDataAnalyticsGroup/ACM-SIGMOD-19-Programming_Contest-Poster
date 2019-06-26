@@ -279,7 +279,7 @@
             \item parallelize recursion into partition
             \item fall back to \texttt{std::sort()} on recursion if number of records is small (i.e.\ \emph{introsort}
                 with fall back to \emph{insertion sort})
-            \item atomic counter for head and tail of each partition
+            \item atomic counters for head and tail of each partition
             \item avoid cache contention
                 \vspace{-.5em}
                 \begin{itemize}

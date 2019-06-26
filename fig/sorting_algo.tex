@@ -4,27 +4,27 @@
     node distance=-\pgflinewidth
     ]
     \begin{scope}[start chain=going right,local bounding box=array]
-        \node[part,fill=MyCyan,minimum width=5mm] (head1) {\rotatebox{90}{head}};
+        \node[part,fill=MyTeal,minimum width=5mm] (head1) {\rotatebox{90}{head}};
         \node[part,fill=red] (curr1) {\rotatebox{90}{current}};
         \node[part,minimum width=8mm] {};
-        \node[part,fill=MyLime] (tail1) {\rotatebox{90}{tail}};
+        \node[part,fill=MyViolet] (tail1) {\rotatebox{90}{tail}};
 
-        \node[part,fill=MyCyan,xshift=.5\pgflinewidth,minimum width=7mm] (head2) {};
+        \node[part,fill=MyTeal,xshift=.5\pgflinewidth,minimum width=7mm] (head2) {};
         \node[part,fill=red] (curr2) {};
         \node[part,minimum width=10mm] {};
-        \node[part,fill=MyLime] (tail2) {};
+        \node[part,fill=MyViolet] (tail2) {};
 
         \node[on chain,minimum width=10mm] {};
 
-        \node[part,fill=MyCyan] (head3) {};
+        \node[part,fill=MyTeal] (head3) {};
         \node[part,fill=red] (curr3) {};
         \node[part,minimum width=10mm] {};
-        \node[part,fill=MyLime,minimum width=7mm] (tail3) {};
+        \node[part,fill=MyViolet,minimum width=7mm] (tail3) {};
 
-        \node[part,fill=MyCyan,xshift=.5\pgflinewidth] (head4) {};
+        \node[part,fill=MyTeal,xshift=.5\pgflinewidth] (head4) {};
         \node[part,fill=red] (curr4) {};
         \node[part,minimum width=10mm] {};
-        \node[part,fill=MyLime,minimum width=5mm] (tail4) {};
+        \node[part,fill=MyViolet,minimum width=5mm] (tail4) {};
     \end{scope}
 
     \draw[very thick] (tail2.north east) -- (head1.north west) -- (head1.south west) -- (tail2.south east);

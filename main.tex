@@ -74,6 +74,8 @@
 \colorlet{MyLime}{lime!92!black}
 \colorlet{MyOrange}{orange!95!black}
 \colorlet{MyCyan}{cyan!70!blue}
+\colorlet{MyTeal}{teal!70}
+\colorlet{MyViolet}{violet!60}
 %\colorlet{MyColorOne}{black}
 %\colorlet{MyColorTwo}{black!30}
 
@@ -253,7 +255,7 @@
             \State compute histogram
             \State compute partition boundaries
             \For{every record $r$}
-                \If {$r$ in right partition}
+                \If {$r$ in destination partition}
                     \State proceed to next record
                 \Else
                     \State $p \gets$ destination partition of $r$
@@ -301,8 +303,8 @@
 
 \vspace*{-6em}
 \begin{tikzpicture}[overlay,remember picture]
-    \coordinate (arr_task_to_inmemory) at (page cs:0,.33);
-    \coordinate (arr_task_to_external) at (page cs:-.20,.265);
+    \coordinate (arr_task_to_inmemory) at (page cs:0,.34);
+    \coordinate (arr_task_to_external) at (page cs:-.12,.265);
     \coordinate (arr_extern_uses) at (page cs:0,-.35);
     \coordinate (arr_inmemory_uses) at (page cs:.75,-.03);
 

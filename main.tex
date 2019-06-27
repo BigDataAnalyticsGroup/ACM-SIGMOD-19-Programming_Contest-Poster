@@ -224,6 +224,7 @@
             \State sort $s$ with \emph{sicsort} \Comment{in separate thread}
             \State partition remaining records into 256~files
             \For {every partition file $p$, sorted by size}
+                \State sort $p$ with \emph{sicsort}
                 \State merge $p$ with $s$ to output file on disk
             \EndFor
         \end{algorithmic}
@@ -287,7 +288,8 @@
                     \item pad counters to 64\,Bytes $\Rightarrow$ one cache line per counter
                     \item with $256$ partitions requires exactly 32\,KiB cache (L1D)
                 \end{itemize}
-        \end{itemize}
+        \end{itemize}%
+        \vspace*{-5.8pt}
     }
 
     \headerbox{Ranking}{name=eval,column=0,span=3,below=libs}{
@@ -298,7 +300,6 @@
             \item first in \emph{Medium} (20\,GB) with~12\,\% margin to second
             \item fifth in \emph{Large} (60\,GB) with~15\,\% margin to best
         \end{itemize}
-        \vspace*{-2.5pt}
     }
 \end{poster}
 
